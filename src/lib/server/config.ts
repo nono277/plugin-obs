@@ -24,9 +24,9 @@ export async function deleteConfig(): Promise<void> {
 export async function getSpotifyCredentials(): Promise<{ clientId: string; clientSecret: string; redirectUri: string }> {
 	const cfg = await loadConfig();
 	return {
-		clientId:     cfg.spotifyClientId     || process.env.SPOTIFY_CLIENT_ID     || '',
-		clientSecret: cfg.spotifyClientSecret || process.env.SPOTIFY_CLIENT_SECRET || '',
-		redirectUri:  cfg.spotifyRedirectUri  || process.env.SPOTIFY_REDIRECT_URI  || ''
+		clientId:     cfg.spotifyClientId     ?? '',
+		clientSecret: cfg.spotifyClientSecret ?? '',
+		redirectUri:  cfg.spotifyRedirectUri  ?? ''
 	};
 }
 
