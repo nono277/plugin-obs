@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(mkdir *)",
+      "Bash(node -e ' *)",
+      "Bash(npm install *)",
+      "Bash(npx svelte-kit *)",
+      "Bash(npx svelte-check *)",
+      "Bash(timeout 15 npx vite build)",
+      "Bash(npx playwright *)",
+      "Bash(npx vite *)",
+      "Bash(curl -s http://localhost:5173/settings)",
+      "Bash(curl -s -I http://localhost:5173/settings)",
+      "Bash(curl -s http://localhost:5173/__data.json)",
+      "Bash(curl -s -I http://localhost:5173/)",
+      "Bash(curl -s -I http://localhost:5173/overlay)",
+      "Bash(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\sella\\\\Desktop\\\\plugin obs\\\\static\\\\extension\")",
+      "Bash(Out-Null)",
+      "PowerShell(New-Item *)",
+      "Bash(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\sella\\\\Desktop\\\\plugin obs\\\\src\\\\routes\\\\api\\\\extension\")",
+      "Bash(Write-Output \"ok\")",
+      "Bash(curl -s -I http://localhost:5173/api/extension)",
+      "Bash(curl -s -I http://localhost:5173/api/config)",
+      "Bash(npm list *)",
+      "Bash(Get-Content *)"
+    ]
+  }
+}

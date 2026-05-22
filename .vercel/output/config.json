@@ -1,0 +1,77 @@
+{
+	"version": 3,
+	"routes": [
+		{
+			"src": ".*",
+			"continue": true,
+			"transforms": [
+				{
+					"type": "request.query",
+					"op": "delete",
+					"target": {
+						"key": "__pathname"
+					}
+				}
+			]
+		},
+		{
+			"src": "/_app/immutable/.+",
+			"headers": {
+				"cache-control": "public, immutable, max-age=31536000"
+			}
+		},
+		{
+			"handle": "filesystem"
+		},
+		{
+			"src": "/_app/immutable/.+",
+			"status": 404,
+			"continue": false
+		},
+		{
+			"src": "^/?(?:/__data.json)?$",
+			"dest": "/"
+		},
+		{
+			"src": "^/api/config/?(?:/__data.json)?$",
+			"dest": "/api/config"
+		},
+		{
+			"src": "^/api/extension/?(?:/__data.json)?$",
+			"dest": "/api/extension"
+		},
+		{
+			"src": "^/api/spotify/auth/?(?:/__data.json)?$",
+			"dest": "/api/spotify/auth"
+		},
+		{
+			"src": "^/api/spotify/callback/?(?:/__data.json)?$",
+			"dest": "/api/spotify/callback"
+		},
+		{
+			"src": "^/api/spotify/status/?(?:/__data.json)?$",
+			"dest": "/api/spotify/status"
+		},
+		{
+			"src": "^/api/track/?(?:/__data.json)?$",
+			"dest": "/api/track"
+		},
+		{
+			"src": "^/api/youtube/update/?(?:/__data.json)?$",
+			"dest": "/api/youtube/update"
+		},
+		{
+			"src": "^/overlay/?(?:/__data.json)?$",
+			"dest": "/overlay"
+		},
+		{
+			"src": "^/settings/?(?:/__data.json)?$",
+			"dest": "/settings"
+		},
+		{
+			"src": "/.*",
+			"dest": "/![-]/catchall"
+		}
+	],
+	"overrides": {}
+}

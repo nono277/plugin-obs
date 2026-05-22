@@ -1,0 +1,13 @@
+{
+  "manifest_version": 2,
+  "name": "OBS Music Overlay — YouTube Music",
+  "version": "1.0.0",
+  "description": "Envoie les données de lecture YouTube Music à votre overlay OBS en temps réel.",
+  "content_scripts": [
+    {
+      "matches": ["https://music.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

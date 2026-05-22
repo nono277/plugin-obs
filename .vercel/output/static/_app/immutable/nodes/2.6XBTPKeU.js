@@ -1,0 +1,1 @@
+import"../chunks/Bzak7iHL.js";import"../chunks/Bwfk0_vv.js";import{a as t}from"../chunks/CdhtEwZ8.js";import{aM as a,aJ as p}from"../chunks/-AUfYTpm.js";import{i as r}from"../chunks/ZlJc7Y96.js";import{g as i}from"../chunks/DgoDOFu6.js";function u(m,o){a(o,!1),t(()=>i("/settings")),r(),p()}export{u as component};
