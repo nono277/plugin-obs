@@ -7,3 +7,5 @@ dist/
 .obs-store.json
 .spotify-tokens.json
 *.local
+
+.vercel

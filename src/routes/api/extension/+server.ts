@@ -9,7 +9,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		name: 'OBS Music Overlay — YouTube Music',
 		version: '1.0.0',
 		description: "Envoie les données de lecture YouTube Music à votre overlay OBS en temps réel.",
-		permissions: ['https://music.youtube.com/*'],
+		permissions: ['https://music.youtube.com/*', `${origin}/*`],
 		content_scripts: [{
 			matches: ['https://music.youtube.com/*'],
 			js: ['content.js'],
