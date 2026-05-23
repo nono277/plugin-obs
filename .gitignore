@@ -1,7 +1,9 @@
 .svelte-kit/
+.vercel/
 node_modules/
 build/
 dist/
 .env
+.obs-store.json
 .spotify-tokens.json
 *.local
