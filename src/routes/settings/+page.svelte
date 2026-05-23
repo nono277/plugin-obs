@@ -239,29 +239,54 @@
 
 			<!-- YouTube Music -->
 			<section class="card">
-				<h2 class="section-title">YouTube</h2>
+				<h2 class="section-title">YouTube Music</h2>
 
-				<p class="yt-desc">Via <strong style="color:rgba(255,255,255,0.7)">Tampermonkey</strong> — permanent sur Firefox et Chrome.</p>
-				<ol class="install-steps" style="margin-bottom:10px">
-					<li>Installer <strong>Tampermonkey</strong> depuis la boutique Firefox/Chrome</li>
-					<li>Télécharger le userscript ci-dessous</li>
-					<li>Tampermonkey l'installe automatiquement</li>
-				</ol>
-				<a href="/api/userscript?key={key}" download="obs-youtube-overlay.user.js" class="btn-download">
-					<svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+				<p class="yt-desc">Affiche la musique YouTube dans l'overlay via <strong style="color:rgba(255,255,255,0.75)">Tampermonkey</strong> — fonctionne sur Firefox et Chrome, permanent entre les redémarrages.</p>
+
+				<div class="install-block">
+					<div class="install-step-num">1</div>
+					<div>
+						<p class="install-step-title">Installer Tampermonkey</p>
+						<p class="install-step-desc">C'est une extension gratuite disponible sur les boutiques officielles.</p>
+						<div style="display:flex; gap:6px; margin-top:6px; flex-wrap:wrap;">
+							<a href="https://addons.mozilla.org/firefox/addon/tampermonkey/" target="_blank" rel="noopener" class="browser-link">Firefox</a>
+							<a href="https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo" target="_blank" rel="noopener" class="browser-link">Chrome</a>
+						</div>
+					</div>
+				</div>
+
+				<div class="install-block">
+					<div class="install-step-num">2</div>
+					<div style="flex:1">
+						<p class="install-step-title">Télécharger le userscript</p>
+						<p class="install-step-desc">Tampermonkey détecte le fichier <code>.user.js</code> et propose l'installation automatiquement.</p>
+						<a href="/api/userscript?key={key}" download="obs-youtube-overlay.user.js" class="btn-download" style="margin-top:8px">
+							<svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+								<path d="M7.5 1v9M4 7l3.5 3.5L11 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+								<path d="M2 13h11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+							</svg>
+							Télécharger le userscript
+						</a>
+					</div>
+				</div>
+
+				<div class="install-block">
+					<div class="install-step-num">3</div>
+					<div>
+						<p class="install-step-title">Jouer une vidéo YouTube</p>
+						<p class="install-step-desc">Le script se déclenche automatiquement sur youtube.com et music.youtube.com. La musique apparaît ici et dans OBS.</p>
+					</div>
+				</div>
+
+				<div class="yt-separator"></div>
+
+				<p class="yt-desc" style="font-size:11px; margin-bottom:6px; color:rgba(255,255,255,0.25)">Vous préférez Chrome sans Tampermonkey ? Utilisez l'extension non-empaquetée.</p>
+				<a href="/api/extension?key={key}" download="obs-youtube-extension.zip" class="btn-download" style="opacity:0.45; font-size:12px; padding:7px 12px;">
+					<svg width="13" height="13" viewBox="0 0 15 15" fill="none">
 						<path d="M7.5 1v9M4 7l3.5 3.5L11 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
 						<path d="M2 13h11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
 					</svg>
-					Télécharger le userscript
-				</a>
-
-				<p class="yt-desc" style="margin-top:14px; margin-bottom:6px;">Ou via <strong style="color:rgba(255,255,255,0.5)">extension Chrome</strong> (non-empaquetée, persistante).</p>
-				<a href="/api/extension?key={key}" download="obs-youtube-extension.zip" class="btn-download" style="opacity:0.6">
-					<svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-						<path d="M7.5 1v9M4 7l3.5 3.5L11 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-						<path d="M2 13h11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-					</svg>
-					Télécharger l'extension Chrome
+					Extension Chrome (non-empaquetée)
 				</a>
 			</section>
 
@@ -608,6 +633,65 @@
 		color: rgba(255,255,255,0.35);
 		margin: 0 0 10px;
 		line-height: 1.5;
+	}
+
+	.install-block {
+		display: flex;
+		gap: 12px;
+		align-items: flex-start;
+		margin-bottom: 14px;
+	}
+
+	.install-step-num {
+		flex-shrink: 0;
+		width: 22px;
+		height: 22px;
+		border-radius: 50%;
+		background: rgba(255,255,255,0.07);
+		border: 1px solid rgba(255,255,255,0.1);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 11px;
+		font-weight: 700;
+		color: rgba(255,255,255,0.4);
+		margin-top: 1px;
+	}
+
+	.install-step-title {
+		font-size: 12.5px;
+		font-weight: 600;
+		color: rgba(255,255,255,0.8);
+		margin: 0 0 2px;
+	}
+
+	.install-step-desc {
+		font-size: 11.5px;
+		color: rgba(255,255,255,0.3);
+		margin: 0;
+		line-height: 1.5;
+	}
+
+	.browser-link {
+		font-size: 11px;
+		font-weight: 600;
+		padding: 3px 10px;
+		border-radius: 5px;
+		background: rgba(255,255,255,0.06);
+		border: 1px solid rgba(255,255,255,0.1);
+		color: rgba(255,255,255,0.5);
+		text-decoration: none;
+		transition: all 0.15s;
+	}
+	.browser-link:hover {
+		background: rgba(255,255,255,0.1);
+		color: rgba(255,255,255,0.8);
+	}
+
+	.yt-separator {
+		border: none;
+		border-top: 1px solid rgba(255,255,255,0.05);
+		margin: 14px 0 12px;
 	}
 	.btn-download {
 		display: flex;
