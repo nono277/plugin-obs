@@ -46,14 +46,15 @@
 	}
 
 	onMount(async () => {
-		// Génère ou récupère la clé depuis l'URL
+		// Récupère la clé : URL > localStorage > génère une nouvelle
 		const params = new URLSearchParams(window.location.search);
 		let k = params.get('key') ?? '';
-		if (!k) {
-			k = generateKey();
-			params.set('key', k);
-			window.history.replaceState({}, '', `?${params}`);
-		}
+		if (!k) k = localStorage.getItem('obs-overlay-key') ?? '';
+		if (!k) k = generateKey();
+		// Toujours synchroniser URL et localStorage
+		localStorage.setItem('obs-overlay-key', k);
+		params.set('key', k);
+		window.history.replaceState({}, '', `?${params}`);
 		key = k;
 		setKey(k);
 		connectWebSocket();
