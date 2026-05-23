@@ -7,7 +7,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	const script = `// ==UserScript==
 // @name         OBS Music Overlay — YouTube
 // @namespace    obs-music-overlay
-// @version      2.1
+// @version      2.2
 // @description  Envoie les données de lecture YouTube à l'overlay OBS en temps réel
 // @match        *://www.youtube.com/*
 // @match        *://music.youtube.com/*
@@ -15,6 +15,7 @@ export const GET: RequestHandler = async ({ url }) => {
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_registerMenuCommand
+// @grant        unsafeWindow
 // @connect      ${host}
 // @run-at       document-idle
 // ==/UserScript==
@@ -35,13 +36,13 @@ function buildUrl() {
 // Menu Tampermonkey pour définir/changer la clé sans re-télécharger le script
 GM_registerMenuCommand('⚙️ Définir ma clé OBS', () => {
   const current = getKey();
-  const k = prompt(
+  const k = unsafeWindow.prompt(
     'Entrez votre clé OBS (visible dans l\\'URL de plugin-obs.vercel.app/settings)',
     current
   );
   if (k !== null) {
     GM_setValue('obs_key', k.trim());
-    alert('Clé OBS sauvegardée : ' + k.trim());
+    unsafeWindow.alert('Clé OBS sauvegardée : ' + k.trim());
   }
 });
 
