@@ -32,6 +32,7 @@
 	let saveError = '';
 	let redirectUri = '';
 	let urlCopied = false;
+	let kvMissing = false;
 
 	onMount(async () => {
 		redirectUri = `${window.location.origin}/api/spotify/callback`;
@@ -41,6 +42,8 @@
 		]);
 		const cfg  = await cfgRes.json();
 		const auth = await authRes.json();
+
+		kvMissing = cfg.kvReady === false;
 
 		if (auth.connected) {
 			spotifyState = 'connected';
@@ -128,6 +131,22 @@
 		</div>
 
 		<div class="sidebar-content">
+
+			<!-- KV warning -->
+			{#if kvMissing}
+				<div class="kv-warning">
+					<svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="flex-shrink:0">
+						<path d="M7 1L13 12H1L7 1Z" stroke="#f59e0b" stroke-width="1.3" stroke-linejoin="round"/>
+						<path d="M7 5v3M7 10v.5" stroke="#f59e0b" stroke-width="1.3" stroke-linecap="round"/>
+					</svg>
+					<span>
+						<strong>Vercel KV non connecté</strong> — les paramètres ne seront pas sauvegardés.
+						<a href="https://vercel.com/dashboard" target="_blank" rel="noopener" class="kv-link">
+							Dashboard → Storage → créer une base KV et la lier au projet.
+						</a>
+					</span>
+				</div>
+			{/if}
 
 			<!-- Spotify -->
 			<section class="card">
@@ -428,6 +447,23 @@
 		scrollbar-width: thin;
 		scrollbar-color: rgba(255,255,255,0.08) transparent;
 	}
+
+	/* ── KV warning ────────────────────────────────────────────────── */
+	.kv-warning {
+		display: flex;
+		gap: 10px;
+		align-items: flex-start;
+		padding: 10px 12px;
+		background: rgba(245,158,11,0.08);
+		border: 1px solid rgba(245,158,11,0.25);
+		border-radius: 10px;
+		font-size: 12px;
+		color: rgba(255,255,255,0.6);
+		line-height: 1.5;
+	}
+	.kv-warning strong { color: #f59e0b; font-weight: 600; }
+	.kv-link { color: #f59e0b; text-decoration: underline; display: block; margin-top: 2px; }
+	.kv-link:hover { color: #fbbf24; }
 
 	/* ── Cards ─────────────────────────────────────────────────────── */
 	.card {

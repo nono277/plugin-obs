@@ -40,25 +40,68 @@ function localDel(key: string): void {
 	writeStore(store);
 }
 
-function isVercel(): boolean {
-	return !!process.env.KV_REST_API_URL;
+type Mode = 'kv' | 'redis' | 'local';
+
+function getMode(): Mode {
+	if (process.env.KV_REST_API_URL) return 'kv';
+	if (process.env.REDIS_URL)       return 'redis';
+	return 'local';
+}
+
+export function kvReady(): boolean {
+	return getMode() !== 'local';
+}
+
+// Cached Redis client — reused across requests in the same container
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _redis: any = null;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getRedis(): Promise<any> {
+	if (_redis?.isOpen) return _redis;
+	const { createClient } = await import('redis');
+	_redis = createClient({ url: process.env.REDIS_URL });
+	_redis.on('error', () => { _redis = null; });
+	await _redis.connect();
+	return _redis;
 }
 
 export async function kvGet<T>(key: string): Promise<T | null> {
-	if (!isVercel()) return localGet<T>(key);
-	const { kv } = await import('@vercel/kv');
-	return kv.get<T>(key);
+	const mode = getMode();
+	if (mode === 'local') return localGet<T>(key);
+	if (mode === 'kv') {
+		const { kv } = await import('@vercel/kv');
+		return kv.get<T>(key);
+	}
+	const redis = await getRedis();
+	const raw: string | null = await redis.get(key);
+	if (!raw) return null;
+	return JSON.parse(raw) as T;
 }
 
 export async function kvSet(key: string, value: unknown, ttlSeconds?: number): Promise<void> {
-	if (!isVercel()) { localSet(key, value, ttlSeconds); return; }
-	const { kv } = await import('@vercel/kv');
-	if (ttlSeconds) await kv.set(key, value, { ex: ttlSeconds });
-	else await kv.set(key, value);
+	const mode = getMode();
+	if (mode === 'local') { localSet(key, value, ttlSeconds); return; }
+	if (mode === 'kv') {
+		const { kv } = await import('@vercel/kv');
+		if (ttlSeconds) await kv.set(key, value, { ex: ttlSeconds });
+		else await kv.set(key, value);
+		return;
+	}
+	const redis = await getRedis();
+	const serialized = JSON.stringify(value);
+	if (ttlSeconds) await redis.set(key, serialized, { EX: ttlSeconds });
+	else await redis.set(key, serialized);
 }
 
 export async function kvDel(key: string): Promise<void> {
-	if (!isVercel()) { localDel(key); return; }
-	const { kv } = await import('@vercel/kv');
-	await kv.del(key);
+	const mode = getMode();
+	if (mode === 'local') { localDel(key); return; }
+	if (mode === 'kv') {
+		const { kv } = await import('@vercel/kv');
+		await kv.del(key);
+		return;
+	}
+	const redis = await getRedis();
+	await redis.del(key);
 }

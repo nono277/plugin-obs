@@ -1,12 +1,14 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { loadConfig, saveConfig, deleteConfig, hasSpotifyCredentials } from '$lib/server/config';
+import { kvReady } from '$lib/server/kv';
 
 export const GET: RequestHandler = async () => {
 	const cfg = await loadConfig();
 	return json({
 		hasCredentials: await hasSpotifyCredentials(),
-		clientId: cfg.spotifyClientId || ''
+		clientId: cfg.spotifyClientId || '',
+		kvReady: kvReady()
 	});
 };
 
