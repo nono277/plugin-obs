@@ -25,11 +25,10 @@ const API_URL = '${origin}/api/youtube/update';
 let lastSent = null;
 
 function send(track) {
-  fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(track)
-  }).catch(() => {});
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', API_URL, true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.send(JSON.stringify(track));
 }
 
 function scrape() {
