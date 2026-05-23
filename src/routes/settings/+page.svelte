@@ -240,21 +240,29 @@
 			<!-- YouTube Music -->
 			<section class="card">
 				<h2 class="section-title">YouTube</h2>
-				<p class="yt-desc">Installez l'extension Firefox pour envoyer les données de lecture en temps réel à l'overlay.</p>
-				<a href="/api/extension?key={key}" download="obs-youtube-extension.zip" class="btn-download">
+
+				<p class="yt-desc">Via <strong style="color:rgba(255,255,255,0.7)">Tampermonkey</strong> — permanent sur Firefox et Chrome.</p>
+				<ol class="install-steps" style="margin-bottom:10px">
+					<li>Installer <strong>Tampermonkey</strong> depuis la boutique Firefox/Chrome</li>
+					<li>Télécharger le userscript ci-dessous</li>
+					<li>Tampermonkey l'installe automatiquement</li>
+				</ol>
+				<a href="/api/userscript?key={key}" download="obs-youtube-overlay.user.js" class="btn-download">
 					<svg width="15" height="15" viewBox="0 0 15 15" fill="none">
 						<path d="M7.5 1v9M4 7l3.5 3.5L11 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
 						<path d="M2 13h11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
 					</svg>
-					Télécharger l'extension
+					Télécharger le userscript
 				</a>
-				<ol class="install-steps">
-					<li>Dézipper le fichier téléchargé</li>
-					<li>Firefox → <code>about:debugging</code></li>
-					<li>Cliquer <strong>Ce Firefox</strong></li>
-					<li>Cliquer <strong>Charger un module temporaire</strong></li>
-					<li>Sélectionner le fichier <code>manifest.json</code></li>
-				</ol>
+
+				<p class="yt-desc" style="margin-top:14px; margin-bottom:6px;">Ou via <strong style="color:rgba(255,255,255,0.5)">extension Chrome</strong> (non-empaquetée, persistante).</p>
+				<a href="/api/extension?key={key}" download="obs-youtube-extension.zip" class="btn-download" style="opacity:0.6">
+					<svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+						<path d="M7.5 1v9M4 7l3.5 3.5L11 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+						<path d="M2 13h11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+					</svg>
+					Télécharger l'extension Chrome
+				</a>
 			</section>
 
 			<!-- Thème -->

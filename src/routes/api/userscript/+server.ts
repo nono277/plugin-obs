@@ -1,5 +1,4 @@
 import type { RequestHandler } from './$types';
-import { zipSync, strToU8 } from 'fflate';
 
 export const GET: RequestHandler = async ({ url }) => {
 	const origin = url.origin;
@@ -8,43 +7,28 @@ export const GET: RequestHandler = async ({ url }) => {
 		? `${origin}/api/youtube/update?key=${encodeURIComponent(key)}`
 		: `${origin}/api/youtube/update`;
 
-	const manifest = JSON.stringify({
-		manifest_version: 2,
-		name: 'OBS Music Overlay — YouTube',
-		version: '1.0.0',
-		description: "Envoie les données de lecture YouTube à votre overlay OBS en temps réel.",
-		permissions: ['<all_urls>'],
-		background: {
-			scripts: ['background.js']
-		},
-		content_scripts: [{
-			matches: ['*://www.youtube.com/*', '*://music.youtube.com/*'],
-			js: ['content.js'],
-			run_at: 'document_idle'
-		}]
-	}, null, 2);
+	const script = `// ==UserScript==
+// @name         OBS Music Overlay — YouTube
+// @namespace    obs-music-overlay
+// @version      1.1
+// @description  Envoie les données de lecture YouTube à l'overlay OBS en temps réel
+// @match        *://www.youtube.com/*
+// @match        *://music.youtube.com/*
+// @grant        none
+// @run-at       document-idle
+// ==/UserScript==
 
-	// Shim de compatibilité Chrome/Firefox — les deux APIs sont identiques, seul le nom diffère.
-	const backgroundJs = `'use strict';
+'use strict';
 
-const _b = typeof browser !== 'undefined' ? browser : chrome;
 const API_URL = '${apiUrl}';
-
-_b.runtime.onMessage.addListener((track) => {
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', API_URL, true);
-  xhr.setRequestHeader('Content-Type', 'application/json');
-  xhr.send(JSON.stringify(track));
-});
-`;
-
-	const contentJs = `'use strict';
-
-const _b = typeof browser !== 'undefined' ? browser : chrome;
 let lastSent = null;
 
 function send(track) {
-  _b.runtime.sendMessage(track);
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(track)
+  }).catch(() => {});
 }
 
 function scrape() {
@@ -53,9 +37,8 @@ function scrape() {
     const videoId = params.get('v');
     if (!videoId) return;
 
-    // document.title est la source la plus fiable : "Titre — YouTube"
     const rawTitle = document.title || '';
-    const title = rawTitle.replace(/\\s*[-–|]\\s*YouTube\\s*$/i, '').trim();
+    const title = rawTitle.replace(/\\s*[-\\u2013|]\\s*YouTube\\s*$/i, '').trim();
     if (!title || title.toLowerCase() === 'youtube') return;
 
     const artist = (
@@ -67,7 +50,6 @@ function scrape() {
     ).trim();
 
     const artworkUrl = 'https://img.youtube.com/vi/' + videoId + '/maxresdefault.jpg';
-
     const video = document.querySelector('video.html5-main-video') || document.querySelector('video');
     const isPlaying = video ? !video.paused && !video.ended : false;
     const duration  = video ? Math.floor(video.duration  || 0) : 0;
@@ -87,20 +69,13 @@ function scrape() {
   }
 }
 
-console.log('[OBS Overlay] Content script chargé sur', location.href);
 setInterval(scrape, 1000);
 `;
 
-	const zipped = zipSync({
-		'manifest.json':  strToU8(manifest),
-		'background.js':  strToU8(backgroundJs),
-		'content.js':     strToU8(contentJs)
-	});
-
-	return new Response(zipped, {
+	return new Response(script, {
 		headers: {
-			'Content-Type': 'application/zip',
-			'Content-Disposition': 'attachment; filename="obs-youtube-extension.zip"'
+			'Content-Type': 'application/javascript; charset=utf-8',
+			'Content-Disposition': 'attachment; filename="obs-youtube-overlay.user.js"'
 		}
 	});
 };
