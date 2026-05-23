@@ -2,6 +2,7 @@ import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ url }) => {
 	const origin = url.origin;
+	const host   = new URL(origin).hostname;
 	const key    = url.searchParams.get('key') ?? '';
 	const apiUrl = key
 		? `${origin}/api/youtube/update?key=${encodeURIComponent(key)}`
@@ -10,11 +11,12 @@ export const GET: RequestHandler = async ({ url }) => {
 	const script = `// ==UserScript==
 // @name         OBS Music Overlay — YouTube
 // @namespace    obs-music-overlay
-// @version      1.1
+// @version      1.2
 // @description  Envoie les données de lecture YouTube à l'overlay OBS en temps réel
 // @match        *://www.youtube.com/*
 // @match        *://music.youtube.com/*
-// @grant        none
+// @grant        GM_xmlhttpRequest
+// @connect      ${host}
 // @run-at       document-idle
 // ==/UserScript==
 
@@ -24,11 +26,12 @@ const API_URL = '${apiUrl}';
 let lastSent = null;
 
 function send(track) {
-  fetch(API_URL, {
+  GM_xmlhttpRequest({
     method: 'POST',
+    url: API_URL,
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(track)
-  }).catch(() => {});
+    data: JSON.stringify(track)
+  });
 }
 
 function scrape() {
