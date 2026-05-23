@@ -7,7 +7,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	const script = `// ==UserScript==
 // @name         OBS Music Overlay — YouTube
 // @namespace    obs-music-overlay
-// @version      2.0
+// @version      2.1
 // @description  Envoie les données de lecture YouTube à l'overlay OBS en temps réel
 // @match        *://www.youtube.com/*
 // @match        *://music.youtube.com/*
@@ -46,10 +46,12 @@ GM_registerMenuCommand('⚙️ Définir ma clé OBS', () => {
 });
 
 let lastSent = null;
+let lastSentTime = 0;
 
 function send(track) {
   const url = buildUrl();
   if (!getKey()) return; // ne rien envoyer tant que la clé n'est pas configurée
+  lastSentTime = Date.now();
   GM_xmlhttpRequest({
     method: 'POST',
     url: url,
@@ -90,7 +92,10 @@ function scrape() {
       lastSent.isPlaying !== isPlaying ||
       Math.abs((lastSent.position || 0) - position) > 2;
 
-    if (changed) { lastSent = track; send(track); }
+    // Force resend every 8s to keep KV key alive (TTL = 10s)
+    const stale = Date.now() - lastSentTime > 8000;
+
+    if (changed || stale) { lastSent = track; send(track); }
   } catch (e) {
     console.warn('[OBS Overlay] Erreur :', e);
   }
