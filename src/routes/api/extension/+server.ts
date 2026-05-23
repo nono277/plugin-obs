@@ -9,12 +9,18 @@ export const GET: RequestHandler = async ({ url }) => {
 		name: 'OBS Music Overlay — YouTube Music',
 		version: '1.0.0',
 		description: "Envoie les données de lecture YouTube Music à votre overlay OBS en temps réel.",
-		permissions: ['https://music.youtube.com/*', `${origin}/*`],
+		permissions: ['<all_urls>'],
 		content_scripts: [{
-			matches: ['https://music.youtube.com/*'],
+			matches: ['*://music.youtube.com/*'],
 			js: ['content.js'],
 			run_at: 'document_idle'
-		}]
+		}],
+		browser_specific_settings: {
+			gecko: {
+				id: 'obs-music-overlay@overlay',
+				strict_min_version: '57.0'
+			}
+		}
 	}, null, 2);
 
 	const contentJs = `'use strict';
