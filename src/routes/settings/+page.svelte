@@ -1,24 +1,15 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { get } from 'svelte/store';
 	import { settingsStore, musicStore } from '$lib/stores/musicStore';
+	import { setKey, connectWebSocket, disconnectWebSocket } from '$lib/websocket/wsClient';
 	import MusicWidget from '$lib/components/MusicWidget.svelte';
 	import type { OverlaySettings } from '$lib/types/music';
 
-	onMount(() => {
-		musicStore.setTrack({
-			title: 'Blinding Lights',
-			artist: 'The Weeknd',
-			album: 'After Hours',
-			artworkUrl: 'https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36',
-			duration: 200,
-			position: 42,
-			isPlaying: true,
-			source: 'spotify'
-		});
-	});
 
 	$: settings = $settingsStore;
+
+	onDestroy(() => disconnectWebSocket());
 
 	let _saveTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -64,6 +55,8 @@
 			window.history.replaceState({}, '', `?${params}`);
 		}
 		key = k;
+		setKey(k);
+		connectWebSocket();
 
 		redirectUri = `${window.location.origin}/api/spotify/callback`;
 
