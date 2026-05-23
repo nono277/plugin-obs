@@ -49,35 +49,26 @@ function send(track) {
   browser.runtime.sendMessage(track);
 }
 
-function getArtworkUrl(videoId) {
-  if (!videoId) return '';
-  return 'https://img.youtube.com/vi/' + videoId + '/maxresdefault.jpg';
-}
-
 function scrape() {
   try {
-    // Uniquement sur les pages vidéo
     const params = new URLSearchParams(location.search);
     const videoId = params.get('v');
     if (!videoId) return;
 
-    const title = (
-      document.querySelector('ytd-watch-metadata h1 yt-formatted-string')?.textContent ||
-      document.querySelector('h1.ytd-watch-metadata')?.textContent ||
-      document.querySelector('#title h1')?.textContent ||
-      ''
-    ).trim();
-
-    if (!title) return;
+    // document.title est la source la plus fiable : "Titre — YouTube"
+    const rawTitle = document.title || '';
+    const title = rawTitle.replace(/\\s*[-–|]\\s*YouTube\\s*$/i, '').trim();
+    if (!title || title.toLowerCase() === 'youtube') return;
 
     const artist = (
-      document.querySelector('ytd-channel-name a')?.textContent ||
+      document.querySelector('#channel-name yt-formatted-string')?.textContent ||
+      document.querySelector('ytd-channel-name yt-formatted-string')?.textContent ||
+      document.querySelector('#owner-name a')?.textContent ||
       document.querySelector('#channel-name a')?.textContent ||
-      document.querySelector('#owner #channel-name yt-formatted-string')?.textContent ||
       ''
     ).trim();
 
-    const artworkUrl = getArtworkUrl(videoId);
+    const artworkUrl = 'https://img.youtube.com/vi/' + videoId + '/maxresdefault.jpg';
 
     const video = document.querySelector('video.html5-main-video') || document.querySelector('video');
     const isPlaying = video ? !video.paused && !video.ended : false;
@@ -98,6 +89,7 @@ function scrape() {
   }
 }
 
+console.log('[OBS Overlay] Content script chargé sur', location.href);
 setInterval(scrape, 1000);
 `;
 
