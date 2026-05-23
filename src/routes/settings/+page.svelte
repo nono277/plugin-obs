@@ -38,20 +38,14 @@
 	let kvMissing = false;
 	let key = '';
 
-	function generateKey(): string {
-		const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-		return Array.from(crypto.getRandomValues(new Uint8Array(10)))
-			.map(b => chars[b % chars.length])
-			.join('');
-	}
-
 	onMount(async () => {
-		// Récupère la clé : URL > localStorage > génère une nouvelle
 		const params = new URLSearchParams(window.location.search);
 		let k = params.get('key') ?? '';
 		if (!k) k = localStorage.getItem('obs-overlay-key') ?? '';
-		if (!k) k = generateKey();
-		// Toujours synchroniser URL et localStorage
+		if (!k) {
+			const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+			k = Array.from(crypto.getRandomValues(new Uint8Array(10))).map(b => chars[b % chars.length]).join('');
+		}
 		localStorage.setItem('obs-overlay-key', k);
 		params.set('key', k);
 		window.history.replaceState({}, '', `?${params}`);
