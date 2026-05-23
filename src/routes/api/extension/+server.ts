@@ -3,6 +3,10 @@ import { zipSync, strToU8 } from 'fflate';
 
 export const GET: RequestHandler = async ({ url }) => {
 	const origin = url.origin;
+	const key    = url.searchParams.get('key') ?? '';
+	const apiUrl = key
+		? `${origin}/api/youtube/update?key=${encodeURIComponent(key)}`
+		: `${origin}/api/youtube/update`;
 
 	const manifest = JSON.stringify({
 		manifest_version: 2,
@@ -31,7 +35,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	// contrairement aux content scripts.
 	const backgroundJs = `'use strict';
 
-const API_URL = '${origin}/api/youtube/update';
+const API_URL = '${apiUrl}';
 
 browser.runtime.onMessage.addListener((track) => {
   const xhr = new XMLHttpRequest();

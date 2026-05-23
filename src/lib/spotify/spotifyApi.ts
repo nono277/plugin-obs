@@ -3,7 +3,7 @@ import type { TrackInfo, SpotifyTokens } from '$lib/types/music';
 const SPOTIFY_API = 'https://api.spotify.com/v1';
 const TOKEN_URL = 'https://accounts.spotify.com/api/token';
 
-export function buildAuthUrl(clientId: string, redirectUri: string): string {
+export function buildAuthUrl(clientId: string, redirectUri: string, state = ''): string {
 	const scopes = [
 		'user-read-currently-playing',
 		'user-read-playback-state',
@@ -15,7 +15,8 @@ export function buildAuthUrl(clientId: string, redirectUri: string): string {
 		client_id: clientId,
 		scope: scopes,
 		redirect_uri: redirectUri,
-		show_dialog: 'false'
+		show_dialog: 'false',
+		...(state ? { state } : {})
 	});
 
 	return `https://accounts.spotify.com/authorize?${params}`;

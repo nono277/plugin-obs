@@ -23,7 +23,12 @@
       "Bash(curl -s -I http://localhost:5173/api/extension)",
       "Bash(curl -s -I http://localhost:5173/api/config)",
       "Bash(npm list *)",
-      "Bash(Get-Content *)"
+      "Bash(Get-Content *)",
+      "WebSearch",
+      "WebFetch(domain:developer.spotify.com)",
+      "WebFetch(domain:techcrunch.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:community.spotify.com)"
     ]
   }
 }

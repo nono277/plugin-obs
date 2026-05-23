@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { get } from 'svelte/store';
 	import { settingsStore, musicStore } from '$lib/stores/musicStore';
 	import MusicWidget from '$lib/components/MusicWidget.svelte';
 	import type { OverlaySettings } from '$lib/types/music';
@@ -19,8 +20,19 @@
 
 	$: settings = $settingsStore;
 
+	let _saveTimer: ReturnType<typeof setTimeout> | null = null;
+
 	function update(partial: Partial<OverlaySettings>) {
 		settingsStore.update(partial);
+		if (_saveTimer) clearTimeout(_saveTimer);
+		_saveTimer = setTimeout(async () => {
+			if (!key) return;
+			await fetch(`/api/settings?key=${encodeURIComponent(key)}`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(get(settingsStore))
+			}).catch(() => {});
+		}, 500);
 	}
 
 	// États Spotify : unconfigured → configured → connected
@@ -33,12 +45,31 @@
 	let redirectUri = '';
 	let urlCopied = false;
 	let kvMissing = false;
+	let key = '';
+
+	function generateKey(): string {
+		const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+		return Array.from(crypto.getRandomValues(new Uint8Array(10)))
+			.map(b => chars[b % chars.length])
+			.join('');
+	}
 
 	onMount(async () => {
+		// Génère ou récupère la clé depuis l'URL
+		const params = new URLSearchParams(window.location.search);
+		let k = params.get('key') ?? '';
+		if (!k) {
+			k = generateKey();
+			params.set('key', k);
+			window.history.replaceState({}, '', `?${params}`);
+		}
+		key = k;
+
 		redirectUri = `${window.location.origin}/api/spotify/callback`;
+
 		const [cfgRes, authRes] = await Promise.all([
-			fetch('/api/config'),
-			fetch('/api/spotify/status')
+			fetch(`/api/config?key=${key}`),
+			fetch(`/api/spotify/status?key=${key}`)
 		]);
 		const cfg  = await cfgRes.json();
 		const auth = await authRes.json();
@@ -61,7 +92,7 @@
 		const res = await fetch('/api/config', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ spotifyClientId: clientIdInput.trim(), spotifyClientSecret: secretInput.trim() })
+			body: JSON.stringify({ spotifyClientId: clientIdInput.trim(), spotifyClientSecret: secretInput.trim(), key })
 		});
 		const data = await res.json();
 		if (data.error) { saveError = data.error; saving = false; return; }
@@ -71,19 +102,19 @@
 	}
 
 	async function resetSpotifyConfig() {
-		await fetch('/api/config', { method: 'DELETE' });
-		await fetch('/api/spotify/status', { method: 'DELETE' });
+		await fetch(`/api/config?key=${key}`, { method: 'DELETE' });
+		await fetch(`/api/spotify/status?key=${key}`, { method: 'DELETE' });
 		spotifyState = 'unconfigured';
 		clientIdInput = ''; secretInput = '';
 	}
 
 	async function disconnectSpotify() {
-		await fetch('/api/spotify/status', { method: 'DELETE' });
+		await fetch(`/api/spotify/status?key=${key}`, { method: 'DELETE' });
 		spotifyState = 'configured';
 	}
 
 	async function copyUrl() {
-		const overlayUrl = `${window.location.origin}/overlay`;
+		const overlayUrl = `${window.location.origin}/overlay?key=${key}`;
 		await navigator.clipboard.writeText(overlayUrl);
 		urlCopied = true;
 		setTimeout(() => (urlCopied = false), 2000);
@@ -193,7 +224,7 @@
 
 				{:else if spotifyState === 'configured'}
 					<p class="yt-desc">Clés enregistrées — connectez votre compte.</p>
-					<a href="/api/spotify/auth" class="btn-primary">
+					<a href="/api/spotify/auth?key={key}" class="btn-primary">
 						<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.65 14.58c-.2.33-.63.43-.96.23-2.62-1.6-5.92-1.97-9.81-1.08-.37.09-.75-.14-.84-.51-.09-.37.14-.75.51-.84 4.25-1 7.93-.57 10.87 1.24.34.2.44.63.23.96zm1.24-2.76c-.25.41-.78.54-1.19.29-3-1.84-7.57-2.37-11.11-1.3-.46.14-.94-.12-1.08-.58-.14-.46.12-.94.58-1.08 4.05-1.23 9.09-.63 12.52 1.48.41.25.54.78.28 1.19zm.11-2.87C14.6 9.08 9.08 8.88 5.69 9.96c-.55.17-1.13-.14-1.3-.69-.17-.55.14-1.13.69-1.3 3.95-1.2 10.52-.97 14.66 1.5.49.29.66.92.37 1.41-.29.49-.92.66-1.41.37z"/></svg>
 						Connecter Spotify
 					</a>
@@ -217,7 +248,7 @@
 			<section class="card">
 				<h2 class="section-title">YouTube</h2>
 				<p class="yt-desc">Installez l'extension Firefox pour envoyer les données de lecture en temps réel à l'overlay.</p>
-				<a href="/api/extension" download="obs-youtube-extension.zip" class="btn-download">
+				<a href="/api/extension?key={key}" download="obs-youtube-extension.zip" class="btn-download">
 					<svg width="15" height="15" viewBox="0 0 15 15" fill="none">
 						<path d="M7.5 1v9M4 7l3.5 3.5L11 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
 						<path d="M2 13h11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
@@ -373,7 +404,7 @@
 		</div>
 
 		<div class="preview-footer">
-			<span class="obs-url">{typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173'}/overlay</span>
+			<span class="obs-url">{typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173'}/overlay{key ? `?key=${key}` : ''}</span>
 			<span class="obs-hint">OBS → Sources → Navigateur → coller l'URL</span>
 		</div>
 	</main>

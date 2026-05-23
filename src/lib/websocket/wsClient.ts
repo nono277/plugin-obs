@@ -5,6 +5,11 @@ const POLL_INTERVAL = 3000;
 
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 let destroyed = false;
+let _key = '';
+
+export function setKey(key: string): void {
+	_key = key;
+}
 
 export function connectWebSocket(): void {
 	if (typeof window === 'undefined') return;
@@ -24,7 +29,8 @@ export function disconnectWebSocket(): void {
 async function _poll(): Promise<void> {
 	if (destroyed) return;
 	try {
-		const res = await fetch('/api/track');
+		const url = _key ? `/api/track?key=${encodeURIComponent(_key)}` : '/api/track';
+		const res = await fetch(url);
 		if (!res.ok) return;
 		const track: TrackInfo | null = await res.json();
 		if (track) {

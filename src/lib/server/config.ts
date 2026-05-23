@@ -6,23 +6,25 @@ export interface AppConfig {
 	spotifyRedirectUri?: string;
 }
 
-const CONFIG_KEY = 'app:config';
-
-export async function loadConfig(): Promise<AppConfig> {
-	return (await kvGet<AppConfig>(CONFIG_KEY)) ?? {};
+function configKey(key: string): string {
+	return key ? `${key}:app:config` : 'app:config';
 }
 
-export async function saveConfig(patch: AppConfig): Promise<void> {
-	const existing = await loadConfig();
-	await kvSet(CONFIG_KEY, { ...existing, ...patch });
+export async function loadConfig(key = ''): Promise<AppConfig> {
+	return (await kvGet<AppConfig>(configKey(key))) ?? {};
 }
 
-export async function deleteConfig(): Promise<void> {
-	await kvDel(CONFIG_KEY);
+export async function saveConfig(patch: AppConfig, key = ''): Promise<void> {
+	const existing = await loadConfig(key);
+	await kvSet(configKey(key), { ...existing, ...patch });
 }
 
-export async function getSpotifyCredentials(): Promise<{ clientId: string; clientSecret: string; redirectUri: string }> {
-	const cfg = await loadConfig();
+export async function deleteConfig(key = ''): Promise<void> {
+	await kvDel(configKey(key));
+}
+
+export async function getSpotifyCredentials(key = ''): Promise<{ clientId: string; clientSecret: string; redirectUri: string }> {
+	const cfg = await loadConfig(key);
 	return {
 		clientId:     cfg.spotifyClientId     ?? '',
 		clientSecret: cfg.spotifyClientSecret ?? '',
@@ -30,7 +32,7 @@ export async function getSpotifyCredentials(): Promise<{ clientId: string; clien
 	};
 }
 
-export async function hasSpotifyCredentials(): Promise<boolean> {
-	const { clientId, clientSecret } = await getSpotifyCredentials();
+export async function hasSpotifyCredentials(key = ''): Promise<boolean> {
+	const { clientId, clientSecret } = await getSpotifyCredentials(key);
 	return !!(clientId && clientSecret);
 }

@@ -6,16 +6,18 @@ import { getCurrentTrack, refreshAccessToken, isTokenExpired } from '$lib/spotif
 import { getSpotifyCredentials, hasSpotifyCredentials } from '$lib/server/config';
 import type { TrackInfo } from '$lib/types/music';
 
-export const GET: RequestHandler = async () => {
+export const GET: RequestHandler = async ({ url }) => {
+	const key = url.searchParams.get('key') ?? '';
+
 	// Spotify takes priority if connected
-	if (await hasSpotifyCredentials()) {
+	if (await hasSpotifyCredentials(key)) {
 		try {
-			let tokens = await loadTokens();
+			let tokens = await loadTokens(key);
 			if (tokens) {
 				if (isTokenExpired(tokens)) {
-					const { clientId, clientSecret } = await getSpotifyCredentials();
+					const { clientId, clientSecret } = await getSpotifyCredentials(key);
 					tokens = await refreshAccessToken(tokens.refreshToken, clientId, clientSecret);
-					await saveTokens(tokens);
+					await saveTokens(tokens, key);
 				}
 				const track = await getCurrentTrack(tokens.accessToken);
 				if (track) return json(track);
@@ -26,7 +28,8 @@ export const GET: RequestHandler = async () => {
 	}
 
 	// YouTube fallback (short TTL — set by extension)
-	const yt = await kvGet<TrackInfo>('youtube:track');
+	const ytKey = key ? `${key}:youtube:track` : 'youtube:track';
+	const yt = await kvGet<TrackInfo>(ytKey);
 	if (yt) return json(yt);
 
 	return json(null);
