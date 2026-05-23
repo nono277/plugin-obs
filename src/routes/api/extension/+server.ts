@@ -10,6 +10,9 @@ export const GET: RequestHandler = async ({ url }) => {
 		version: '1.0.0',
 		description: "Envoie les données de lecture YouTube Music à votre overlay OBS en temps réel.",
 		permissions: ['<all_urls>'],
+		background: {
+			scripts: ['background.js']
+		},
 		content_scripts: [{
 			matches: ['*://music.youtube.com/*'],
 			js: ['content.js'],
@@ -23,18 +26,27 @@ export const GET: RequestHandler = async ({ url }) => {
 		}
 	}, null, 2);
 
-	const contentJs = `'use strict';
+	// Le background script reçoit les données du content script et fait le XHR.
+	// Les background scripts Firefox bénéficient des host permissions et bypass le CORS,
+	// contrairement aux content scripts.
+	const backgroundJs = `'use strict';
 
-// URL de l'API — générée automatiquement depuis votre déploiement
 const API_URL = '${origin}/api/youtube/update';
 
-let lastSent = null;
-
-function send(track) {
+browser.runtime.onMessage.addListener((track) => {
   const xhr = new XMLHttpRequest();
   xhr.open('POST', API_URL, true);
   xhr.setRequestHeader('Content-Type', 'application/json');
   xhr.send(JSON.stringify(track));
+});
+`;
+
+	const contentJs = `'use strict';
+
+let lastSent = null;
+
+function send(track) {
+  browser.runtime.sendMessage(track);
 }
 
 function scrape() {
@@ -79,8 +91,9 @@ setInterval(scrape, 1000);
 `;
 
 	const zipped = zipSync({
-		'manifest.json': strToU8(manifest),
-		'content.js':    strToU8(contentJs)
+		'manifest.json':  strToU8(manifest),
+		'background.js':  strToU8(backgroundJs),
+		'content.js':     strToU8(contentJs)
 	});
 
 	return new Response(zipped, {
