@@ -6,15 +6,15 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	const manifest = JSON.stringify({
 		manifest_version: 2,
-		name: 'OBS Music Overlay — YouTube Music',
+		name: 'OBS Music Overlay — YouTube',
 		version: '1.0.0',
-		description: "Envoie les données de lecture YouTube Music à votre overlay OBS en temps réel.",
+		description: "Envoie les données de lecture YouTube à votre overlay OBS en temps réel.",
 		permissions: ['<all_urls>'],
 		background: {
 			scripts: ['background.js']
 		},
 		content_scripts: [{
-			matches: ['*://music.youtube.com/*'],
+			matches: ['*://www.youtube.com/*'],
 			js: ['content.js'],
 			run_at: 'document_idle'
 		}],
@@ -49,26 +49,37 @@ function send(track) {
   browser.runtime.sendMessage(track);
 }
 
+function getArtworkUrl(videoId) {
+  if (!videoId) return '';
+  return 'https://img.youtube.com/vi/' + videoId + '/maxresdefault.jpg';
+}
+
 function scrape() {
   try {
+    // Uniquement sur les pages vidéo
+    const params = new URLSearchParams(location.search);
+    const videoId = params.get('v');
+    if (!videoId) return;
+
     const title = (
-      document.querySelector('.ytmusic-player-bar .title')?.textContent ||
-      document.querySelector('yt-formatted-string.title.ytmusic-player-bar')?.textContent ||
+      document.querySelector('ytd-watch-metadata h1 yt-formatted-string')?.textContent ||
+      document.querySelector('h1.ytd-watch-metadata')?.textContent ||
+      document.querySelector('#title h1')?.textContent ||
       ''
     ).trim();
 
     if (!title) return;
 
-    const bylineEl = document.querySelector('.ytmusic-player-bar .byline');
-    const artist = (bylineEl?.textContent || '').trim().split('\\u2022')[0].trim();
+    const artist = (
+      document.querySelector('ytd-channel-name a')?.textContent ||
+      document.querySelector('#channel-name a')?.textContent ||
+      document.querySelector('#owner #channel-name yt-formatted-string')?.textContent ||
+      ''
+    ).trim();
 
-    const imgEl =
-      document.querySelector('#song-image img') ||
-      document.querySelector('.ytmusic-player-bar #thumbnail img') ||
-      document.querySelector('ytmusic-player-bar img.thumbnail');
-    const artworkUrl = imgEl?.src || '';
+    const artworkUrl = getArtworkUrl(videoId);
 
-    const video = document.querySelector('video');
+    const video = document.querySelector('video.html5-main-video') || document.querySelector('video');
     const isPlaying = video ? !video.paused && !video.ended : false;
     const duration  = video ? Math.floor(video.duration  || 0) : 0;
     const position  = video ? Math.floor(video.currentTime || 0) : 0;

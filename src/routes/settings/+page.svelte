@@ -215,7 +215,7 @@
 
 			<!-- YouTube Music -->
 			<section class="card">
-				<h2 class="section-title">YouTube Music</h2>
+				<h2 class="section-title">YouTube</h2>
 				<p class="yt-desc">Installez l'extension Firefox pour envoyer les données de lecture en temps réel à l'overlay.</p>
 				<a href="/api/extension" download="obs-youtube-extension.zip" class="btn-download">
 					<svg width="15" height="15" viewBox="0 0 15 15" fill="none">
